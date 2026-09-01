@@ -1,0 +1,51 @@
+--- a/paper-checkstyle/build.gradle.kts
++++ b/paper-checkstyle/build.gradle.kts
+@@ -1,9 +_,38 @@
++import io.papermc.paperweight.checkstyle.tasks.MergeCheckstyleConfigs
++
+ plugins {
+     java
+     id("io.papermc.paperweight.paper-checkstyle")
+ }
+ 
+-val testData = sourceSets.create("testData")
++val testData = sourceSets.create("testData") {
++    java {
++        srcDir(file("../paper-checkstyle/src/testData/java"))
++    }
++}
++
++sourceSets {
++    main {
++        java {
++            srcDir(file("../paper-checkstyle/src/main/java"))
++        }
++        resources {
++            srcDir(file("../paper-checkstyle/src/main/resources"))
++        }
++    }
++    test {
++        java {
++            srcDir(file("../paper-checkstyle/src/test/java"))
++        }
++        resources {
++            srcDir(file("../paper-checkstyle/src/test/resources"))
++        }
++    }
++}
++
++tasks.named<MergeCheckstyleConfigs>("mergeCheckstyleConfigs") {
++    overrideConfigFile = rootProject.layout.projectDirectory.file("paper-checkstyle/.checkstyle/checkstyle.xml")
++}
+ 
+ dependencies {
+     implementation("com.puppycrawl.tools:checkstyle:13.8.0")
+@@ -16,7 +_,7 @@
+     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+     testData.implementationConfigurationName("org.jspecify:jspecify:1.0.0")
+ 
+-    checkstyle(project(":paper-checkstyle"))
++    checkstyle(project(":press-checkstyle"))
+ }
+ 
+ tasks {

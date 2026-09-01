@@ -7,6 +7,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
 for (name in listOf("press-api", "press-server", "press-checkstyle")) {
     include(name)
     file(name).mkdirs()
