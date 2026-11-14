@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-    id("io.papermc.paperweight.patcher") version "2.0.0-beta.23"
+    id("io.papermc.paperweight.patcher") version "2.0.0-beta.24"
 }
 
 paperweight {
@@ -60,17 +60,13 @@ subprojects {
         }
     }
 
-    val tempDisabled = setOf("press-server")
+    apply { plugin("io.papermc.paperweight.paper-checkstyle") }
+    extensions.configure<PaperCheckstyleExt> {
+        typeUseAnnotationsFile.set(rootProject.layout.projectDirectory.file(".checkstyle/type_use_annotations.txt"))
+    }
 
-    if (name !in tempDisabled) {
-        apply { plugin("io.papermc.paperweight.paper-checkstyle") }
-        extensions.configure<PaperCheckstyleExt> {
-            typeUseAnnotationsFile.set(rootProject.layout.projectDirectory.file(".checkstyle/type_use_annotations.txt"))
-        }
-
-        dependencies {
-            "checkstyle"(project(":press-checkstyle"))
-        }
+    dependencies {
+        "checkstyle"(project(":press-checkstyle"))
     }
 }
 
