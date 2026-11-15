@@ -17,3 +17,6 @@ build
 /.checkstyle
 
 .idea/
+
+# Python bytecode caches from the research scripts
+__pycache__/

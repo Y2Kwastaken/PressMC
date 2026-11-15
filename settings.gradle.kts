@@ -16,6 +16,9 @@ for (name in listOf("press-api", "press-server", "press-checkstyle")) {
     file(name).mkdirs()
 }
 
+// Standalone tool: no dependency on the Paper fork projects or Paper repositories.
+include("static-analyzer")
+
 //for (name in listOf("press-plugin")) {
 //    optionalInclude(name);
 //}

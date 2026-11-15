@@ -1,0 +1,4 @@
+# Downloaded third-party plugin jars: for local analysis only, never commit or redistribute.
+# The run's metadata (manifest.csv, fetch.log, analysis.log) next to them is kept so the sample can be reproduced.
+/sample/jars/
+__pycache__/

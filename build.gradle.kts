@@ -50,7 +50,12 @@ paperweight {
     }
 }
 
-subprojects {
+// Projects that are part of the Paper fork. Standalone tools (e.g. static-analyzer) are excluded so they
+// don't pick up Paper's checkstyle, repositories or publishing setup.
+val standaloneProjects = setOf(":static-analyzer")
+val forkProjects = subprojects.filter { it.path !in standaloneProjects }
+
+configure(forkProjects) {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
@@ -72,7 +77,7 @@ subprojects {
 
 val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
 
-subprojects {
+configure(forkProjects) {
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = Charsets.UTF_8.name()
         options.release = 25
