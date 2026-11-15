@@ -137,24 +137,27 @@ Release channels: 874 release, 70 beta, 10 alpha, 4 other.
 
 ## Deprecated Method Use
 
-Before getting into the charts, here's the headline: **107 of the 136 deprecated entries are not referenced by a single plugin in the sample.**
-Only 60 of the 958 plugins (6.3%) reference any of the entries from their own code. If none of the n plugins in a group use something, the
-real usage rate is at most around 3/n at 95% confidence (the "rule of three"). So for each of those 107 entries that's below ~0.6% of popular
-plugins, and going off the random tail, below ~1% of the wider ecosystem.
+Before getting into the charts, the main takeaway is that **107 of the 136 deprecated entries aren't referenced by a single plugin in the sample.**
+Only 60 of the 958 plugins (6.3%) use any of these entries from their own code. Of course, no plugin in my sample using something doesn't mean
+nobody uses it. There's a rule of thumb for this called the "rule of three": if none of n plugins use something, you can be about 95% confident
+the real usage rate is at most 3/n. For those 107 entries that means less than ~0.6% of popular plugins (3/500), and going off the random tail,
+less than ~1% of the wider ecosystem (3/300). Though I imagine my confidence is actually less than than this because of our ommission of spigot in
+the data set.
 
-### What the analysis can tell
+### What Analysis tell us
 
-The static-analyzer reads the bytecode of every class in a jar and records every reference to one of the 136 entries. There are a few things
-it can't tell us, and they matter for how far these numbers go:
+The static-analyzer reads the bytecode of every class in a jar and records any reference to one of the 136 entries. That said there are a few
+things it can't tell us, and I think it's important to go over them before getting into the numbers.
 
-- **A reference is not a method call.** A reference only means the code *can* call the method. If it sits behind a version check, it may never run on a
-  26.3 server, and the analyzer can't tell the difference.
-- **14 entries are invisible to it.** 14 of the 136 entries are `MapPalette` color constants. The Java compiler copies the value of a constant
-  straight into the plugin, so these never show up in a static scan. All 14 are among the 107 unreferenced entries, so 93 is probably the more accurate number.
-- **Library attribution is an estimate.** Libraries are found by matching package and class names against known libraries, so the split between a
-  plugin's own code and its bundled libraries is a best effort.
-- **4 jars bundled the whole Bukkit API.** UPnP, Authy, Simple RTP and SmeltedOres shipped a full copy of the Bukkit API inside their jar by mistake.
-  References inside those copies aren't the plugin's own usage, so they're excluded. Counting them would have inflated the result to 60 of 136 entries.
+- Just because a plugin references a method doesn't mean it actually calls it. A lot of plugins put old calls behind a version check, so that code may
+  never run on a 26.3 server, and the analyzer has no way of telling the difference.
+- 14 of the 136 entries are `MapPalette` color constants, and these are invisible to the analyzer. The Java compiler copies the value of a constant
+  straight into the plugin, so they never show up in a static scan. All 14 of them are among the 107 unreferenced entries, as such I think 93 is
+  probably the more accurate number.
+- Library attribution is a best guess. Libraries are found by matching package and class names against known libraries, so the split between a
+  plugin's own code and the libraries it bundles isn't perfect.
+- 4 jars (UPnP, Authy, Simple RTP and SmeltedOres) shipped a full copy of the Bukkit API inside their jar by mistake. References inside those copies
+  aren't the plugin's own usage so I excluded them. Counting them would have inflated the result to 60 of 136 entries.
 
 ![Plugins referencing the 136 oldest deprecated APIs](figures/plugins-by-bucket.svg)
 
@@ -187,21 +190,21 @@ who or what plugins use these libraries. Specifically here we will look at XSeri
 
 ![How the 28 sampled plugins that bundle XSeries depend on it](figures/xseries-dependence.svg)
 
-28 of the 958 sampled plugins (2.9%) bundle XSeries. For 16 of them XSeries is their only source of deprecated references, including SkinsRestorer,
-the most downloaded plugin on this list at 1.8M downloads. Another 7 reference the entries through XSeries and other code, and 5 bundle XSeries without their
-copy referencing any of the entries at all.
+In our sample 28 of the 958 plugins (2.9%) bundle XSeries. For 16 of those, XSeries is the only place they reference any of the deprecated entries,
+and that includes SkinsRestorer, which is the most downloaded plugin on this list with 1.8M downloads. Another 7 reference the entries through XSeries
+as well as other code, and the last 5 bundle XSeries but their copy of it doesn't reference any of the entries at all.
 
 ## Extra Metrics
 
 ![Age of the sampled jars](figures/sample-jar-age.svg)
 ![Newest Minecraft version each sampled jar is marked for](figures/sample-minecraft-version.svg)
 
-Unsurprisingly, popular plugins are mostly up to date: 95% of our sample's popular plugins are marked for 1.21.x or later, and 78% for 26.x.
-The random tail lags behind more, 93% are marked for 1.21.x or later but only 39% for 26.x. Keep in mind "marked for" is the author's claim on
-Modrinth or Hangar, not tested compatibility. Within Legacy there exist plugins that are marked for 26.x, 1.21.x and 1.20.x. This is possible
-via updating the metadata on the Hangar and Modrinth page after the fact: all 27 legacy jars marked for 26.x were published between 2023-07 and
-2024-11, while 26.1 only came out on 2026-03-24. As seen from the age of sampled jars, the jar files themselves were not updated, but the page on
-the download site was.
+As you would expect, popular plugins are mostly up to date. 95% of the popular plugins in our sample are marked for 1.21.x or later, and 78% are
+marked for 26.x. The random tail lags behind a bit more, while 93% are marked for 1.21.x or later only 39% are marked for 26.x. It's worth noting
+that "marked for" is just what the author claims on Modrinth or Hangar, it doesn't mean the plugin was actually tested on that version.
+Within Legacy there exist plugins that are marked for 26.x, 1.21.x and 1.20.x. This is possible via updating the metadata on the Hangar and Modrinth
+page after the fact. All 27 legacy jars marked for 26.x were published between 2023-07 and 2024-11, while 26.1 only came out on 2026-03-24. As seen
+from the age of the sampled jars, the jar files themselves were never updated, only the page on the download site was.
 
 ## Conclusion
 
