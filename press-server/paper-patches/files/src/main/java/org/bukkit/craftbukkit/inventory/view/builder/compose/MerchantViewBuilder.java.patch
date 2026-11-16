@@ -1,0 +1,66 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/MerchantViewBuilder.java
+@@ -1,0 +_,63 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import com.google.common.base.Preconditions;
++import net.kyori.adventure.text.Component;
++import org.bukkit.craftbukkit.inventory.CraftMerchant;
++import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.Merchant;
++import org.bukkit.inventory.view.builder.MerchantInventoryViewBuilder;
++import org.jspecify.annotations.Nullable;
++
++final class MerchantViewBuilder<V extends InventoryView> implements MerchantInventoryViewBuilder<V> {
++
++    private final MenuBuilder<MenuContext.Trading> menuBuilder;
++
++    private @Nullable Component paperTitle;
++    private boolean checkReachable;
++    private net.minecraft.world.item.trading.@Nullable Merchant merchant;
++
++    MerchantViewBuilder(final MenuBuilder<MenuContext.Trading> menuBuilder) {
++        this.menuBuilder = menuBuilder;
++    }
++
++    @Override
++    public MerchantInventoryViewBuilder<V> title(final @Nullable Component title) {
++        this.paperTitle = title;
++        return this;
++    }
++
++    @Override
++    public MerchantInventoryViewBuilder<V> merchant(final Merchant merchant) {
++        Preconditions.checkArgument(merchant != null, "merchant must not be null");
++        this.merchant = ((CraftMerchant) merchant).getMerchant();
++        return this;
++    }
++
++    @Override
++    public MerchantInventoryViewBuilder<V> checkReachable(final boolean checkReachable) {
++        this.checkReachable = checkReachable;
++        return this;
++    }
++
++    @Override
++    public V build(final HumanEntity player) {
++        final var serverPlayer = MenuBuilder.verifyHuman(player);
++        final net.minecraft.world.item.trading.Merchant effectiveMerchant = this.merchant != null
++            ? this.merchant
++            : (this.paperTitle == null ? new CraftMerchantCustom() : new CraftMerchantCustom(this.paperTitle)).getMerchant();
++
++        return this.menuBuilder.create(serverPlayer, new MenuContext.Trading(effectiveMerchant))
++            .toView(this.paperTitle, this.checkReachable);
++    }
++
++    @Override
++    public MerchantInventoryViewBuilder<V> copy() {
++        final MerchantViewBuilder<V> copy = new MerchantViewBuilder<>(this.menuBuilder);
++        copy.paperTitle = this.paperTitle;
++        copy.checkReachable = this.checkReachable;
++        copy.merchant = this.merchant;
++        return copy;
++    }
++}

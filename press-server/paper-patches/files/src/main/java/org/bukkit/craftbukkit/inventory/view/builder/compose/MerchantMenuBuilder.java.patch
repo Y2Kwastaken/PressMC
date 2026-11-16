@@ -1,0 +1,32 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/MerchantMenuBuilder.java
+@@ -1,0 +_,29 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import net.minecraft.network.chat.Component;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.entity.npc.villager.AbstractVillager;
++import net.minecraft.world.inventory.MerchantMenu;
++import net.minecraft.world.item.trading.Merchant;
++import org.bukkit.craftbukkit.inventory.CraftMerchantCustom;
++
++final class MerchantMenuBuilder implements MenuBuilder<MenuContext.Trading> {
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Trading context) {
++        return new Created(
++            new MerchantMenu(player.nextContainerCounter(), player.getInventory(), context.merchant()),
++            titleOf(context.merchant())
++        );
++    }
++
++    private static Component titleOf(final Merchant merchant) {
++        if (merchant instanceof final AbstractVillager villager) {
++            return villager.getDisplayName();
++        } else if (merchant instanceof final CraftMerchantCustom.MinecraftMerchant custom) {
++            return custom.getScoreboardDisplayName();
++        }
++
++        throw new IllegalStateException("Provided merchant during MenuType creation can not find a default title! This is a bug!");
++    }
++}

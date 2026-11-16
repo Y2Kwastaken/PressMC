@@ -1,0 +1,34 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/MenuContext.java
+@@ -1,0 +_,31 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import it.unimi.dsi.fastutil.Pair;
++import net.minecraft.core.BlockPos;
++import net.minecraft.world.Container;
++import net.minecraft.world.item.trading.Merchant;
++import net.minecraft.world.level.Level;
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.CraftWorld;
++import org.bukkit.craftbukkit.util.CraftLocation;
++import org.jspecify.annotations.Nullable;
++
++interface MenuContext {
++
++    record None() implements MenuContext {
++        static final None INSTANCE = new None();
++    }
++
++    record Located(@Nullable Location location) implements MenuContext {
++        @Nullable Pair<Level, BlockPos> toMinecraft() {
++            if (this.location == null) return null;
++            return Pair.of(((CraftWorld) this.location.getWorld()).getHandle(), CraftLocation.toBlockPos(this.location));
++        }
++    }
++
++    record Trading(Merchant merchant) implements MenuContext {
++    }
++
++    record Contained(Container container) implements MenuContext {
++    }
++}

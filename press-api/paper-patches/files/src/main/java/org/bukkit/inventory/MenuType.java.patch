@@ -1,0 +1,70 @@
+--- a/src/main/java/org/bukkit/inventory/MenuType.java
++++ b/src/main/java/org/bukkit/inventory/MenuType.java
+@@ -16,7 +_,9 @@
+ import org.bukkit.inventory.view.LoomView;
+ import org.bukkit.inventory.view.MerchantView;
+ import org.bukkit.inventory.view.StonecutterView;
++import org.bukkit.inventory.view.builder.ContainerInventoryViewBuilder;
+ import org.bukkit.inventory.view.builder.InventoryViewBuilder;
++import org.bukkit.inventory.view.builder.LocationContainerInventoryViewBuilder;
+ import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
+ import org.bukkit.inventory.view.builder.MerchantInventoryViewBuilder;
+ import org.jspecify.annotations.NullMarked;
+@@ -32,32 +_,32 @@
+     /**
+      * A MenuType which represents a chest with 1 row.
+      */
+-    MenuType.Typed<InventoryView, InventoryViewBuilder<InventoryView>> GENERIC_9X1 = get("generic_9x1");
++    MenuType.Typed<InventoryView, ContainerInventoryViewBuilder<InventoryView>> GENERIC_9X1 = get("generic_9x1");
+     /**
+      * A MenuType which represents a chest with 2 rows.
+      */
+-    MenuType.Typed<InventoryView, InventoryViewBuilder<InventoryView>> GENERIC_9X2 = get("generic_9x2");
++    MenuType.Typed<InventoryView, ContainerInventoryViewBuilder<InventoryView>> GENERIC_9X2 = get("generic_9x2");
+     /**
+      * A MenuType which represents a chest with 3 rows.
+      */
+-    MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> GENERIC_9X3 = get("generic_9x3");
++    MenuType.Typed<InventoryView, LocationContainerInventoryViewBuilder<InventoryView>> GENERIC_9X3 = get("generic_9x3");
+     /**
+      * A MenuType which represents a chest with 4 rows.
+      */
+-    MenuType.Typed<InventoryView, InventoryViewBuilder<InventoryView>> GENERIC_9X4 = get("generic_9x4");
++    MenuType.Typed<InventoryView, ContainerInventoryViewBuilder<InventoryView>> GENERIC_9X4 = get("generic_9x4");
+     /**
+      * A MenuType which represents a chest with 5 rows.
+      */
+-    MenuType.Typed<InventoryView, InventoryViewBuilder<InventoryView>> GENERIC_9X5 = get("generic_9x5");
++    MenuType.Typed<InventoryView, ContainerInventoryViewBuilder<InventoryView>> GENERIC_9X5 = get("generic_9x5");
+     /**
+      * A MenuType which represents a chest with 6 rows.
+      */
+-    MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> GENERIC_9X6 = get("generic_9x6");
++    MenuType.Typed<InventoryView, LocationContainerInventoryViewBuilder<InventoryView>> GENERIC_9X6 = get("generic_9x6");
+     /**
+      * A MenuType which represents a dispenser/dropper like menu with 3 columns
+      * and 3 rows.
+      */
+-    MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> GENERIC_3X3 = get("generic_3x3");
++    MenuType.Typed<InventoryView, LocationContainerInventoryViewBuilder<InventoryView>> GENERIC_3X3 = get("generic_3x3");
+     /**
+      * A MenuType which represents a crafter
+      */
+@@ -97,7 +_,7 @@
+     /**
+      * A MenuType which represents a hopper.
+      */
+-    MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> HOPPER = get("hopper");
++    MenuType.Typed<InventoryView, LocationContainerInventoryViewBuilder<InventoryView>> HOPPER = get("hopper");
+     /**
+      * A MenuType which represents a lectern, a book like view.
+      */
+@@ -113,7 +_,7 @@
+     /**
+      * A MenuType which represents a shulker box.
+      */
+-    MenuType.Typed<InventoryView, LocationInventoryViewBuilder<InventoryView>> SHULKER_BOX = get("shulker_box");
++    MenuType.Typed<InventoryView, LocationContainerInventoryViewBuilder<InventoryView>> SHULKER_BOX = get("shulker_box");
+     /**
+      * A MenuType which represents a smithing table.
+      */

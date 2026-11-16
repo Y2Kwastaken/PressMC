@@ -1,0 +1,65 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/LocationViewBuilder.java
+@@ -1,0 +_,62 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import com.google.common.base.Preconditions;
++import net.kyori.adventure.text.Component;
++import org.bukkit.Location;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
++import org.jspecify.annotations.Nullable;
++
++final class LocationViewBuilder<V extends InventoryView> implements LocationInventoryViewBuilder<V> {
++
++    private final MenuBuilder<MenuContext.Located> menuBuilder;
++
++    private @Nullable Component paperTitle;
++    private boolean checkReachable;
++    private @Nullable Location location;
++
++    LocationViewBuilder(MenuBuilder<MenuContext.Located> menuBuilder) {
++        this.menuBuilder = menuBuilder;
++    }
++
++    @Override
++    public LocationInventoryViewBuilder<V> title(final @Nullable Component title) {
++        this.paperTitle = title;
++        return this;
++    }
++
++    @Override
++    public LocationInventoryViewBuilder<V> checkReachable(final boolean checkReachable) {
++        this.checkReachable = checkReachable;
++        return this;
++    }
++
++    @Override
++    public LocationInventoryViewBuilder<V> location(final Location location) {
++        Preconditions.checkArgument(location != null, "location must not be null");
++        Preconditions.checkArgument(location.getWorld() != null, "location  must have world");
++
++        this.location = location.clone();
++        return this;
++    }
++
++    @Override
++    public V build(final HumanEntity player) {
++        final var serverPlayer = MenuBuilder.verifyHuman(player);
++        return this.menuBuilder.create(serverPlayer, new MenuContext.Located(this.location))
++            .toView(this.paperTitle, this.checkReachable);
++    }
++
++    @Override
++    public LocationInventoryViewBuilder<V> copy() {
++        LocationViewBuilder<V> copy = new LocationViewBuilder<>(this.menuBuilder);
++        if (this.location != null) {
++            copy.location = this.location.clone();
++        }
++        copy.checkReachable = this.checkReachable;
++        copy.paperTitle = this.paperTitle;
++
++        return copy;
++    }
++}

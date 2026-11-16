@@ -1,0 +1,141 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemContainer.java
+@@ -1,0 +_,138 @@
++package org.bukkit.craftbukkit.inventory;
++
++import com.google.common.base.Preconditions;
++import java.util.Objects;
++import net.minecraft.world.Container;
++import org.bukkit.inventory.ItemContainer;
++import org.bukkit.inventory.ItemStack;
++import org.jspecify.annotations.NullMarked;
++
++@NullMarked
++public class CraftItemContainer implements ItemContainer {
++
++    private final Container handle;
++
++    public CraftItemContainer(final Container handle) {
++        this.handle = handle;
++    }
++
++    public Container getHandle() {
++        return this.handle;
++    }
++
++    /**
++     * Gets the server storage behind an item container created by the server.
++     *
++     * @throws IllegalArgumentException if the container was not created by the server
++     */
++    public static Container unwrap(final ItemContainer container) {
++        if (container instanceof final CraftItemContainer craft) {
++            return craft.getHandle();
++        } else if (container instanceof final CraftInventory inventory) {
++            return inventory.getInventory();
++        }
++
++        throw new IllegalArgumentException("Item container " + container.getClass().getName() + " was not created by the server");
++    }
++
++    @Override
++    public int size() {
++        return this.handle.getContainerSize();
++    }
++
++    @Override
++    public ItemStack get(final int slot) {
++        Objects.checkIndex(slot, this.size());
++        return CraftItemStack.asBukkitMirror(this.handle.getItem(slot));
++    }
++
++    @Override
++    public void set(final int slot, final ItemStack item) {
++        Objects.checkIndex(slot, this.size());
++        Preconditions.checkArgument(item != null, "item must not be null, use an empty stack to clear a slot");
++        this.handle.setItem(slot, CraftItemStack.asNMSCopy(item));
++    }
++
++    @Override
++    public ItemStack add(final ItemStack item) {
++        Preconditions.checkArgument(item != null, "item must not be null");
++        final net.minecraft.world.item.ItemStack remaining = CraftItemStack.asNMSCopy(item);
++        if (remaining.isEmpty()) {
++            return ItemStack.empty();
++        }
++
++        final int size = this.size();
++        boolean grewExisting = false;
++        // top up existing similar stacks first
++        for (int slot = 0; slot < size && !remaining.isEmpty(); slot++) {
++            final net.minecraft.world.item.ItemStack target = this.handle.getItem(slot);
++            if (target.isEmpty() || !net.minecraft.world.item.ItemStack.isSameItemSameComponents(target, remaining)) {
++                continue;
++            }
++
++            final int moved = Math.min(remaining.getCount(), this.handle.getMaxStackSize(target) - target.getCount());
++            if (moved > 0) {
++                target.grow(moved);
++                remaining.shrink(moved);
++                grewExisting = true;
++            }
++        }
++
++        // then fill empty slots, splitting oversized stacks across them
++        for (int slot = 0; slot < size && !remaining.isEmpty(); slot++) {
++            if (this.handle.getItem(slot).isEmpty()) {
++                this.handle.setItem(slot, remaining.split(this.handle.getMaxStackSize(remaining)));
++            }
++        }
++
++        if (grewExisting) {
++            this.handle.setChanged();
++        }
++
++        // remaining is a detached copy, so mirroring it does not link the result to this container
++        return CraftItemStack.asBukkitMirror(remaining);
++    }
++
++    @Override
++    public void clear(final int slot) {
++        Objects.checkIndex(slot, this.size());
++        this.handle.setItem(slot, net.minecraft.world.item.ItemStack.EMPTY);
++    }
++
++    @Override
++    public void clear() {
++        this.handle.clearContent();
++    }
++
++    @Override
++    public boolean isEmpty() {
++        return this.handle.isEmpty();
++    }
++
++    @Override
++    public int firstEmpty() {
++        final int size = this.size();
++        for (int slot = 0; slot < size; slot++) {
++            if (this.handle.getItem(slot).isEmpty()) {
++                return slot;
++            }
++        }
++
++        return -1;
++    }
++
++    @Override
++    public int getMaxStackSize() {
++        return this.handle.getMaxStackSize();
++    }
++
++    @Override
++    public void setMaxStackSize(final int size) {
++        this.handle.setMaxStackSize(size);
++    }
++
++    @Override
++    public String toString() {
++        return "CraftItemContainer{size=" + this.size() + ", handle=" + this.handle + "}";
++    }
++}

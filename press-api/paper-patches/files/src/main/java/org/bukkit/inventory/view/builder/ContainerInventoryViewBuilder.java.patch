@@ -1,0 +1,44 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/inventory/view/builder/ContainerInventoryViewBuilder.java
+@@ -1,0 +_,41 @@
++package org.bukkit.inventory.view.builder;
++
++import net.kyori.adventure.text.Component;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemContainer;
++import org.jetbrains.annotations.ApiStatus;
++import org.jspecify.annotations.Nullable;
++
++/**
++ * An InventoryViewBuilder whose menu can be backed by an {@link ItemContainer}.
++ *
++ * @param <V> the type of InventoryView created from this builder
++ */
++@ApiStatus.Experimental
++public interface ContainerInventoryViewBuilder<V extends InventoryView> extends InventoryViewBuilder<V> {
++
++    @Override
++    ContainerInventoryViewBuilder<V> copy();
++
++    @Override
++    ContainerInventoryViewBuilder<V> title(final @Nullable Component title);
++
++    /**
++     * Backs the built view with the given container instead of new storage.
++     * <p>
++     * The view shares the container's storage, so changes made through either are
++     * visible in both. Only the container's items are used: if the container is an
++     * {@link org.bukkit.inventory.Inventory}, its title and holder do not carry over
++     * to the view.
++     * <p>
++     * A container-backed view only provides the menu, not the block behind it.
++     * Block behaviour such as a chest's lid animation, a hopper moving items or a
++     * dispenser firing does not happen.
++     *
++     * @param container the container to back the view with
++     * @return this builder
++     * @throws IllegalArgumentException if the container's size does not match this
++     *     menu's size, or the container was not created by the server
++     */
++    ContainerInventoryViewBuilder<V> container(final ItemContainer container);
++}

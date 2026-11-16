@@ -1,0 +1,19 @@
+--- a/src/main/java/io/papermc/paper/InternalAPIBridge.java
++++ b/src/main/java/io/papermc/paper/InternalAPIBridge.java
+@@ -34,6 +_,7 @@
+ import org.bukkit.entity.LivingEntity;
+ import org.bukkit.entity.Pose;
+ import org.bukkit.entity.SpawnCategory;
++import org.bukkit.inventory.ItemContainer;
+ import org.bukkit.inventory.ItemStack;
+ import org.bukkit.persistence.PersistentDataType;
+ import org.bukkit.plugin.Plugin;
+@@ -124,6 +_,8 @@
+     LifecycleEventManager<Plugin> createPluginLifecycleEventManager(JavaPlugin plugin, BooleanSupplier registrationCheck);
+ 
+     ItemStack createEmptyStack();
++
++    ItemContainer createItemContainer(int size);
+ 
+     Component resolveWithContext(Component component, @Nullable CommandSender context, @Nullable Entity scoreboardSubject, boolean bypassPermissions) throws IOException;
+ 

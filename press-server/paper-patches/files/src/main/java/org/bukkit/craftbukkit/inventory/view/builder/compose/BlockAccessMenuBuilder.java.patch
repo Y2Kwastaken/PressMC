@@ -1,0 +1,40 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/BlockAccessMenuBuilder.java
+@@ -1,0 +_,37 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import it.unimi.dsi.fastutil.Pair;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.MenuProvider;
++import net.minecraft.world.inventory.MenuType;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.state.BlockState;
++
++final class BlockAccessMenuBuilder implements MenuBuilder<MenuContext.Located> {
++
++    private final MenuType<?> type;
++    private final Block block;
++
++    BlockAccessMenuBuilder(MenuType<?> type, Block block) {
++        this.type = type;
++        this.block = block;
++    }
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Located context) {
++        var locale = context.toMinecraft();
++        BlockState state;
++        if (locale == null) {
++            locale = Pair.of(player.level(), player.blockPosition());
++            state = this.block.defaultBlockState();
++        } else {
++            state = locale.first().getBlockState(locale.second());
++        }
++
++        final MenuProvider provider = this.block.getMenuProvider(state, locale.first(), locale.second());
++        return new Created(
++            provider.createMenu(player.nextContainerCounter(), player.getInventory(), player),
++            provider.getDisplayName()
++        );
++    }
++}

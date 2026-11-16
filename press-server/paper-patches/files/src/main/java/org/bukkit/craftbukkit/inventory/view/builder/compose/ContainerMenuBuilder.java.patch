@@ -1,0 +1,53 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/ContainerMenuBuilder.java
+@@ -1,0 +_,50 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import com.google.common.base.Preconditions;
++import net.minecraft.network.chat.Component;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.Container;
++import net.minecraft.world.entity.player.Inventory;
++import net.minecraft.world.inventory.AbstractContainerMenu;
++import org.bukkit.craftbukkit.inventory.CraftItemContainer;
++import org.bukkit.inventory.ItemContainer;
++
++/**
++ * Creates a menu backed by a given container instead of a block entity or new storage.
++ */
++final class ContainerMenuBuilder implements MenuBuilder<MenuContext.Contained> {
++
++    private final int size;
++    private final Factory factory;
++    private final Component defaultTitle;
++
++    ContainerMenuBuilder(final int size, final Factory factory, final Component defaultTitle) {
++        this.size = size;
++        this.factory = factory;
++        this.defaultTitle = defaultTitle;
++    }
++
++    // Resolves the given container to its server storage, checking it fits this menu.
++    Container resolve(final ItemContainer container) {
++        Preconditions.checkArgument(container != null, "container must not be null");
++        final Container handle = CraftItemContainer.unwrap(container);
++        Preconditions.checkArgument(
++            handle.getContainerSize() == this.size,
++            "container must have exactly %s slots for this menu, but has %s", this.size, handle.getContainerSize()
++        );
++        return handle;
++    }
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Contained context) {
++        return new Created(
++            this.factory.create(player.nextContainerCounter(), player.getInventory(), context.container()),
++            this.defaultTitle
++        );
++    }
++
++    @FunctionalInterface
++    interface Factory {
++        AbstractContainerMenu create(int containerId, Inventory playerInventory, Container container);
++    }
++}

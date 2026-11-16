@@ -1,0 +1,42 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/StandardViewBuilder.java
+@@ -1,0 +_,39 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import net.kyori.adventure.text.Component;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.view.builder.InventoryViewBuilder;
++import org.jspecify.annotations.Nullable;
++
++final class StandardViewBuilder<V extends InventoryView> implements InventoryViewBuilder<V> {
++
++    private final MenuBuilder<MenuContext.None> menuBuilder;
++
++    private @Nullable Component paperTitle;
++
++    StandardViewBuilder(MenuBuilder<MenuContext.None> menuBuilder) {
++        this.menuBuilder = menuBuilder;
++    }
++
++    @Override
++    public InventoryViewBuilder<V> title(final @Nullable Component title) {
++        this.paperTitle = title;
++        return this;
++    }
++
++    @Override
++    public V build(final HumanEntity player) {
++        final var serverPlayer = MenuBuilder.verifyHuman(player);
++        return this.menuBuilder.create(serverPlayer, MenuContext.None.INSTANCE)
++            .toView(this.paperTitle, false);
++    }
++
++    @Override
++    public InventoryViewBuilder<V> copy() {
++        StandardViewBuilder<V> builder = new StandardViewBuilder<>(this.menuBuilder);
++        builder.paperTitle = this.paperTitle;
++
++        return builder;
++    }
++}

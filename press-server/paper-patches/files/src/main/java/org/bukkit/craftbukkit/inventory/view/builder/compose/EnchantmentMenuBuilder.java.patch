@@ -1,0 +1,44 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/EnchantmentMenuBuilder.java
+@@ -1,0 +_,41 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import net.minecraft.core.BlockPos;
++import net.minecraft.network.chat.Component;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.inventory.ContainerLevelAccess;
++import net.minecraft.world.inventory.EnchantmentMenu;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
++
++final class EnchantmentMenuBuilder implements MenuBuilder<MenuContext.Located> {
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Located context) {
++        final var locale = context.toMinecraft();
++        final Level world;
++        final BlockPos position;
++        final Component defaultTitle;
++        if (locale == null) {
++            world = player.level();
++            position = player.blockPosition();
++            defaultTitle = fakeTitle(position);
++        } else {
++            world = locale.left();
++            position = locale.right();
++            defaultTitle = world.getBlockEntity(position) instanceof final EnchantingTableBlockEntity table
++                ? table.getDisplayName()
++                : fakeTitle(position);
++        }
++
++        return new Created(
++            new EnchantmentMenu(player.nextContainerCounter(), player.getInventory(), ContainerLevelAccess.create(world, position)),
++            defaultTitle
++        );
++    }
++
++    private static Component fakeTitle(final BlockPos position) {
++        return new EnchantingTableBlockEntity(position, Blocks.ENCHANTING_TABLE.defaultBlockState()).getDisplayName();
++    }
++}

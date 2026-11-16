@@ -1,0 +1,89 @@
+--- a/src/main/java/org/bukkit/inventory/Inventory.java
++++ b/src/main/java/org/bukkit/inventory/Inventory.java
+@@ -1,8 +_,10 @@
+ package org.bukkit.inventory;
+ 
++import com.google.common.base.Preconditions;
+ import java.util.HashMap;
+ import java.util.List;
+ import java.util.ListIterator;
++import java.util.Objects;
+ import org.bukkit.Location;
+ import org.bukkit.Material;
+ import org.bukkit.entity.HumanEntity;
+@@ -23,10 +_,16 @@
+  * <b>Consider using {@link #getContents()} and {@link #getStorageContents()} for
+  * specific iteration.</b>
+  *
++ * <p>
++ * Every inventory is also an {@link ItemContainer}. The item container methods
++ * ({@link #get(int)}, {@link #set(int, ItemStack)}, {@link #add(ItemStack)}, ...)
++ * never use {@code null} for empty slots, unlike the older methods of this
++ * interface.
++ *
+  * @see #getContents()
+  * @see #getStorageContents()
+  */
+-public interface Inventory extends Iterable<ItemStack> {
++public interface Inventory extends ItemContainer, Iterable<ItemStack> {
+ 
+     /**
+      * Returns the size of the inventory
+@@ -433,4 +_,57 @@
+      */
+     @Nullable
+     public Location getLocation();
++
++    // ItemContainer, implemented on top of the inventory methods so existing implementations keep working
++
++    /**
++     * {@inheritDoc}
++     * <p>
++     * This is the same as {@link #getSize()}.
++     */
++    @Override
++    default int size() {
++        return this.getSize();
++    }
++
++    /**
++     * {@inheritDoc}
++     * <p>
++     * Unlike {@link #getItem(int)}, this never returns {@code null}.
++     */
++    @Override
++    default @NotNull ItemStack get(final int slot) {
++        Objects.checkIndex(slot, this.getSize());
++        final ItemStack item = this.getItem(slot);
++        return item == null ? ItemStack.empty() : item;
++    }
++
++    /**
++     * {@inheritDoc}
++     * <p>
++     * Unlike {@link #setItem(int, ItemStack)}, this does not accept {@code null}.
++     */
++    @Override
++    default void set(final int slot, final @NotNull ItemStack item) {
++        Objects.checkIndex(slot, this.getSize());
++        Preconditions.checkArgument(item != null, "item must not be null, use an empty stack to clear a slot");
++        this.setItem(slot, item);
++    }
++
++    /**
++     * {@inheritDoc}
++     * <p>
++     * This behaves like {@link #addItem(ItemStack...)}, so only the storage
++     * contents are filled, but the given stack is not modified.
++     */
++    @Override
++    default @NotNull ItemStack add(final @NotNull ItemStack item) {
++        Preconditions.checkArgument(item != null, "item must not be null");
++        if (item.isEmpty()) {
++            return ItemStack.empty();
++        }
++
++        final ItemStack leftover = this.addItem(item.clone()).get(0);
++        return leftover == null ? ItemStack.empty() : leftover;
++    }
+ }

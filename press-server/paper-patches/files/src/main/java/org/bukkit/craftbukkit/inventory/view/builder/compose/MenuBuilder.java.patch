@@ -1,0 +1,41 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/MenuBuilder.java
+@@ -1,0 +_,38 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import com.google.common.base.Preconditions;
++import io.papermc.paper.adventure.PaperAdventure;
++import net.minecraft.network.chat.Component;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.inventory.AbstractContainerMenu;
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.jspecify.annotations.Nullable;
++
++interface MenuBuilder<C extends MenuContext> {
++
++    // The default title is returned alongside the menu so implementations stay stateless
++    // and can be safely shared between view builder copies.
++    record Created(AbstractContainerMenu menu, Component defaultTitle) {
++
++        // Applies the view options shared by every view builder and returns the menu's view.
++        // A null title falls back to the default title.
++        @SuppressWarnings("unchecked")
++        <V extends InventoryView> V toView(final net.kyori.adventure.text.@Nullable Component title, final boolean checkReachable) {
++            this.menu.setTitle(title == null ? this.defaultTitle : PaperAdventure.asVanilla(title));
++            this.menu.checkReachable = checkReachable;
++            return (V) this.menu.getBukkitView();
++        }
++    }
++
++    Created create(ServerPlayer player, C context);
++
++    static ServerPlayer verifyHuman(HumanEntity player) {
++        Preconditions.checkArgument(player != null, "The given player must not be null");
++        Preconditions.checkArgument(player instanceof CraftHumanEntity, "The given player must be a CraftHumanEntity");
++        final CraftHumanEntity craftHuman = (CraftHumanEntity) player;
++        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an ServerPlayer");
++        return (ServerPlayer) craftHuman.getHandle();
++    }
++}

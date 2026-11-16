@@ -1,0 +1,130 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/CraftViewBuilders.java
+@@ -1,0 +_,127 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import java.util.function.BiFunction;
++import java.util.function.Supplier;
++import net.minecraft.core.BlockPos;
++import net.minecraft.network.chat.Component;
++import net.minecraft.world.MenuProvider;
++import net.minecraft.world.inventory.ChestMenu;
++import net.minecraft.world.inventory.DispenserMenu;
++import net.minecraft.world.inventory.HopperMenu;
++import net.minecraft.world.inventory.MenuType;
++import net.minecraft.world.inventory.ShulkerBoxMenu;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.entity.ChestBlockEntity;
++import net.minecraft.world.level.block.entity.DispenserBlockEntity;
++import net.minecraft.world.level.block.entity.HopperBlockEntity;
++import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
++import net.minecraft.world.level.block.state.BlockState;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.view.builder.ContainerInventoryViewBuilder;
++import org.bukkit.inventory.view.builder.InventoryViewBuilder;
++import org.bukkit.inventory.view.builder.LocationContainerInventoryViewBuilder;
++import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
++import org.bukkit.inventory.view.builder.MerchantInventoryViewBuilder;
++
++/**
++ * Entry point into the compose view builders. Each method creates the (stateless) menu builder once and returns a
++ * supplier of fresh view builders sharing it.
++ */
++public final class CraftViewBuilders {
++
++    private CraftViewBuilders() {
++    }
++
++    // A menu with no backing block, created straight from its menu type.
++    public static <V extends InventoryView> Supplier<InventoryViewBuilder<V>> standard(final MenuType<?> type) {
++        final MenuBuilder<MenuContext.None> menuBuilder = new StandardMenuBuilder(type);
++        return () -> new StandardViewBuilder<>(menuBuilder);
++    }
++
++    // A menu backed by a block entity, using the one at the location when it matches or a detached one otherwise.
++    public static <V extends InventoryView> Supplier<LocationInventoryViewBuilder<V>> blockEntity(
++        final MenuType<?> type,
++        final Block block,
++        final BiFunction<BlockPos, BlockState, ? extends MenuProvider> blockEntityFactory
++    ) {
++        final MenuBuilder<MenuContext.Located> menuBuilder = new BlockEntityMenuBuilder(type, block, blockEntityFactory);
++        return () -> new LocationViewBuilder<>(menuBuilder);
++    }
++
++    // A menu provided by a block without a block entity, such as a crafting table or anvil.
++    public static <V extends InventoryView> Supplier<LocationInventoryViewBuilder<V>> blockAccess(final MenuType<?> type, final Block block) {
++        final MenuBuilder<MenuContext.Located> menuBuilder = new BlockAccessMenuBuilder(type, block);
++        return () -> new LocationViewBuilder<>(menuBuilder);
++    }
++
++    // A chest menu with no backing block, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<ContainerInventoryViewBuilder<V>> chest(final MenuType<?> type, final int rows) {
++        final MenuBuilder<MenuContext.None> menuBuilder = new StandardMenuBuilder(type);
++        final ContainerMenuBuilder containerMenuBuilder = chestContainer(type, rows, ChestBlockEntity.DEFAULT_NAME);
++        return () -> new ContainerViewBuilder<>(menuBuilder, containerMenuBuilder);
++    }
++
++    // A three row chest menu, using the chest at the location when there is one, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> chestBlock(final MenuType<?> type) {
++        return locationContainer(
++            new BlockEntityMenuBuilder(type, Blocks.CHEST, ChestBlockEntity::new),
++            chestContainer(type, 3, ChestBlockEntity.DEFAULT_NAME)
++        );
++    }
++
++    // A six row chest menu, using the double chest at the location when there is one, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> doubleChest(final MenuType<?> type) {
++        return locationContainer(
++            new DoubleChestMenuBuilder(type),
++            chestContainer(type, 6, DoubleChestMenuBuilder.DEFAULT_TITLE)
++        );
++    }
++
++    // A dispenser menu, using the block entity at the location when it matches, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> dispenser(final MenuType<?> type) {
++        return locationContainer(
++            new BlockEntityMenuBuilder(type, Blocks.DISPENSER, DispenserBlockEntity::new),
++            new ContainerMenuBuilder(9, DispenserMenu::new, Component.translatable("container.dispenser"))
++        );
++    }
++
++    // A hopper menu, using the block entity at the location when it matches, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> hopper(final MenuType<?> type) {
++        return locationContainer(
++            new BlockEntityMenuBuilder(type, Blocks.HOPPER, HopperBlockEntity::new),
++            new ContainerMenuBuilder(5, HopperMenu::new, Component.translatable("container.hopper"))
++        );
++    }
++
++    // A shulker box menu, using the block entity at the location when it matches, which can be backed by a container.
++    public static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> shulkerBox(final MenuType<?> type) {
++        return locationContainer(
++            new BlockEntityMenuBuilder(type, Blocks.SHULKER_BOX, ShulkerBoxBlockEntity::new),
++            new ContainerMenuBuilder(27, ShulkerBoxMenu::new, Component.translatable("container.shulkerBox"))
++        );
++    }
++
++    // An enchanting table menu.
++    public static <V extends InventoryView> Supplier<LocationInventoryViewBuilder<V>> enchantment() {
++        final MenuBuilder<MenuContext.Located> menuBuilder = new EnchantmentMenuBuilder();
++        return () -> new LocationViewBuilder<>(menuBuilder);
++    }
++
++    // A merchant trading menu.
++    public static <V extends InventoryView> Supplier<MerchantInventoryViewBuilder<V>> merchant() {
++        final MenuBuilder<MenuContext.Trading> menuBuilder = new MerchantMenuBuilder();
++        return () -> new MerchantViewBuilder<>(menuBuilder);
++    }
++
++    private static ContainerMenuBuilder chestContainer(final MenuType<?> type, final int rows, final Component defaultTitle) {
++        return new ContainerMenuBuilder(rows * 9, (containerId, playerInventory, container) -> new ChestMenu(type, containerId, playerInventory, container, rows), defaultTitle);
++    }
++
++    private static <V extends InventoryView> Supplier<LocationContainerInventoryViewBuilder<V>> locationContainer(
++        final MenuBuilder<MenuContext.Located> menuBuilder,
++        final ContainerMenuBuilder containerMenuBuilder
++    ) {
++        return () -> new LocationContainerViewBuilder<>(menuBuilder, containerMenuBuilder);
++    }
++}

@@ -1,0 +1,38 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/inventory/ItemContainerListView.java
+@@ -1,0 +_,35 @@
++package org.bukkit.inventory;
++
++import java.util.AbstractList;
++import java.util.RandomAccess;
++import org.jspecify.annotations.NullMarked;
++
++/**
++ * The fixed-size list view returned by {@link ItemContainer#asList()}.
++ */
++@NullMarked
++final class ItemContainerListView extends AbstractList<ItemStack> implements RandomAccess {
++
++    private final ItemContainer container;
++
++    ItemContainerListView(final ItemContainer container) {
++        this.container = container;
++    }
++
++    @Override
++    public ItemStack get(final int index) {
++        return this.container.get(index);
++    }
++
++    @Override
++    public ItemStack set(final int index, final ItemStack element) {
++        final ItemStack previous = this.container.get(index);
++        this.container.set(index, element);
++        return previous;
++    }
++
++    @Override
++    public int size() {
++        return this.container.size();
++    }
++}

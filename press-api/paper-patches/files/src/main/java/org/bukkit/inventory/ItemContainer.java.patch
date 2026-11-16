@@ -1,0 +1,129 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/inventory/ItemContainer.java
+@@ -1,0 +_,126 @@
++package org.bukkit.inventory;
++
++import com.google.common.base.Preconditions;
++import io.papermc.paper.InternalAPIBridge;
++import java.util.List;
++import org.jetbrains.annotations.ApiStatus;
++import org.jspecify.annotations.NullMarked;
++
++/**
++ * A fixed-size, ordered collection of item stacks.
++ * <p>
++ * An item container is plain storage: it has no title, holder, location or viewers, and it is not bound to any
++ * menu. It can be any size and is usable on its own, independently of any menu.
++ * <p>
++ * Empty slots are always represented by an {@link ItemStack#isEmpty() empty} stack, never {@code null}.
++ */
++@NullMarked
++@ApiStatus.NonExtendable
++public interface ItemContainer {
++
++    /**
++     * Creates a new, empty item container.
++     *
++     * @param size the number of slots, must not be negative
++     * @return the new item container
++     */
++    static ItemContainer create(final int size) {
++        Preconditions.checkArgument(size >= 0, "size must not be negative, was %s", size);
++        return InternalAPIBridge.get().createItemContainer(size);
++    }
++
++    /**
++     * Gets the number of slots in this container.
++     *
++     * @return the number of slots
++     */
++    int size();
++
++    /**
++     * Gets the item stack in the given slot.
++     * <p>
++     * A non-empty result mirrors the slot: changes made to it are reflected in this container for as long as the
++     * slot holds that stack. An empty slot returns a new empty stack that is not linked to this container.
++     *
++     * @param slot the slot index
++     * @return the stack in the slot, or an empty stack if the slot is empty
++     * @throws IndexOutOfBoundsException if the slot is out of bounds
++     */
++    ItemStack get(int slot);
++
++    /**
++     * Sets the item stack in the given slot.
++     * <p>
++     * The given stack is copied. Its amount may be limited to this container's maximum stack size.
++     *
++     * @param slot the slot index
++     * @param item the stack to set, or an empty stack to clear the slot
++     * @throws IndexOutOfBoundsException if the slot is out of bounds
++     */
++    void set(int slot, ItemStack item);
++
++    /**
++     * Adds the given item stack to this container, first topping up existing similar stacks and then filling empty
++     * slots in order.
++     * <p>
++     * The given stack is not modified.
++     *
++     * @param item the stack to add
++     * @return the portion that did not fit, or an empty stack if everything was added
++     */
++    ItemStack add(ItemStack item);
++
++    /**
++     * Clears the given slot.
++     *
++     * @param slot the slot index
++     * @throws IndexOutOfBoundsException if the slot is out of bounds
++     */
++    void clear(int slot);
++
++    /**
++     * Clears every slot in this container.
++     */
++    void clear();
++
++    /**
++     * Checks whether every slot in this container is empty.
++     *
++     * @return {@code true} if every slot is empty
++     */
++    boolean isEmpty();
++
++    /**
++     * Gets the index of the first empty slot.
++     *
++     * @return the index of the first empty slot, or {@code -1} if there is none
++     */
++    int firstEmpty();
++
++    /**
++     * Gets the maximum stack size of this container. Stacks placed into this container are limited to the smaller
++     * of this value and the stack's own maximum stack size.
++     *
++     * @return the maximum stack size
++     */
++    int getMaxStackSize();
++
++    /**
++     * Sets the maximum stack size of this container.
++     *
++     * @param size the new maximum stack size
++     */
++    void setMaxStackSize(int size);
++
++    /**
++     * Gets a fixed-size list view of this container.
++     * <p>
++     * {@link List#get(int)} and {@link List#set(int, Object)} behave like {@link #get(int)} and
++     * {@link #set(int, ItemStack)}. Operations that would change the size of the list are not supported.
++     *
++     * @return a live, fixed-size list view of this container
++     */
++    default List<ItemStack> asList() {
++        return new ItemContainerListView(this);
++    }
++}

@@ -1,0 +1,60 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/DoubleChestMenuBuilder.java
+@@ -1,0 +_,57 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import net.minecraft.core.BlockPos;
++import net.minecraft.network.chat.Component;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.MenuProvider;
++import net.minecraft.world.inventory.MenuType;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.level.block.ChestBlock;
++import net.minecraft.world.level.block.DoubleBlockCombiner;
++import net.minecraft.world.level.block.entity.ChestBlockEntity;
++import net.minecraft.world.level.block.state.BlockState;
++
++final class DoubleChestMenuBuilder implements MenuBuilder<MenuContext.Located> {
++
++    static final Component DEFAULT_TITLE = Component.translatable("container.chestDouble");
++
++    private final MenuType<?> type;
++
++    DoubleChestMenuBuilder(final MenuType<?> type) {
++        this.type = type;
++    }
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Located context) {
++        final var locale = context.toMinecraft();
++        if (locale == null) {
++            return this.createFake(player);
++        }
++
++        final Level world = locale.left();
++        final BlockPos position = locale.right();
++        final BlockState state = world.getBlockState(position);
++        if (!(state.getBlock() instanceof final ChestBlock chest)) {
++            return this.createFake(player);
++        }
++
++        final DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> result = chest.combine(state, world, position, false);
++        if (result instanceof DoubleBlockCombiner.NeighborCombineResult.Single<? extends ChestBlockEntity>) {
++            return this.createFake(player);
++        }
++
++        final MenuProvider combined = result.apply(ChestBlock.MENU_PROVIDER_COMBINER).orElse(null);
++        if (combined == null) {
++            return this.createFake(player);
++        }
++
++        return new Created(
++            combined.createMenu(player.nextContainerCounter(), player.getInventory(), player),
++            combined.getDisplayName()
++        );
++    }
++
++    private Created createFake(final ServerPlayer player) {
++        return new Created(this.type.create(player.nextContainerCounter(), player.getInventory()), DEFAULT_TITLE);
++    }
++}

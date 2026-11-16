@@ -1,0 +1,55 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/ContainerViewBuilder.java
+@@ -1,0 +_,52 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import net.kyori.adventure.text.Component;
++import net.minecraft.world.Container;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemContainer;
++import org.bukkit.inventory.view.builder.ContainerInventoryViewBuilder;
++import org.jspecify.annotations.Nullable;
++
++final class ContainerViewBuilder<V extends InventoryView> implements ContainerInventoryViewBuilder<V> {
++
++    private final MenuBuilder<MenuContext.None> menuBuilder;
++    private final ContainerMenuBuilder containerMenuBuilder;
++
++    private @Nullable Component paperTitle;
++    private @Nullable Container container;
++
++    ContainerViewBuilder(final MenuBuilder<MenuContext.None> menuBuilder, final ContainerMenuBuilder containerMenuBuilder) {
++        this.menuBuilder = menuBuilder;
++        this.containerMenuBuilder = containerMenuBuilder;
++    }
++
++    @Override
++    public ContainerInventoryViewBuilder<V> title(final @Nullable Component title) {
++        this.paperTitle = title;
++        return this;
++    }
++
++    @Override
++    public ContainerInventoryViewBuilder<V> container(final ItemContainer container) {
++        this.container = this.containerMenuBuilder.resolve(container);
++        return this;
++    }
++
++    @Override
++    public V build(final HumanEntity player) {
++        final var serverPlayer = MenuBuilder.verifyHuman(player);
++        final MenuBuilder.Created created = this.container == null
++            ? this.menuBuilder.create(serverPlayer, MenuContext.None.INSTANCE)
++            : this.containerMenuBuilder.create(serverPlayer, new MenuContext.Contained(this.container));
++        return created.toView(this.paperTitle, false);
++    }
++
++    @Override
++    public ContainerInventoryViewBuilder<V> copy() {
++        final ContainerViewBuilder<V> copy = new ContainerViewBuilder<>(this.menuBuilder, this.containerMenuBuilder);
++        copy.paperTitle = this.paperTitle;
++        copy.container = this.container;
++        return copy;
++    }
++}

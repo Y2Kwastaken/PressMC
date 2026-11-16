@@ -1,0 +1,42 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/inventory/view/builder/LocationContainerInventoryViewBuilder.java
+@@ -1,0 +_,39 @@
++package org.bukkit.inventory.view.builder;
++
++import net.kyori.adventure.text.Component;
++import org.bukkit.Location;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemContainer;
++import org.jetbrains.annotations.ApiStatus;
++import org.jspecify.annotations.Nullable;
++
++/**
++ * An InventoryViewBuilder that can be bound by location within the world, or backed
++ * by an {@link ItemContainer}.
++ *
++ * @param <V> the type of InventoryView created from this builder
++ */
++@ApiStatus.Experimental
++public interface LocationContainerInventoryViewBuilder<V extends InventoryView> extends LocationInventoryViewBuilder<V>, ContainerInventoryViewBuilder<V> {
++
++    @Override
++    LocationContainerInventoryViewBuilder<V> copy();
++
++    @Override
++    LocationContainerInventoryViewBuilder<V> title(final @Nullable Component title);
++
++    @Override
++    LocationContainerInventoryViewBuilder<V> checkReachable(final boolean checkReachable);
++
++    @Override
++    LocationContainerInventoryViewBuilder<V> location(final Location location);
++
++    /**
++     * {@inheritDoc}
++     * <p>
++     * When a container is set, the view is backed by it rather than by the block
++     * at the bound location.
++     */
++    @Override
++    LocationContainerInventoryViewBuilder<V> container(final ItemContainer container);
++}

@@ -1,0 +1,7 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/package-info.java
+@@ -1,0 +_,4 @@
++@NullMarked
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import org.jspecify.annotations.NullMarked;

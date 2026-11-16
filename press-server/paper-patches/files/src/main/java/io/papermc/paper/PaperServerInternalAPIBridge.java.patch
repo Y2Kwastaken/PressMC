@@ -1,0 +1,14 @@
+--- a/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java
++++ b/src/main/java/io/papermc/paper/PaperServerInternalAPIBridge.java
+@@ -242,6 +_,11 @@
+     }
+ 
+     @Override
++    public org.bukkit.inventory.ItemContainer createItemContainer(final int size) {
++        return new org.bukkit.craftbukkit.inventory.CraftItemContainer(new net.minecraft.world.SimpleContainer(size));
++    }
++
++    @Override
+     public Component resolveWithContext(final Component component, final @Nullable CommandSender context, final @Nullable Entity scoreboardSubject, final boolean bypassPermissions) throws IOException {
+         final net.minecraft.commands.CommandSourceStack source = context != null ? VanillaCommandWrapper.getListener(context) : null;
+         Boolean previous = null;

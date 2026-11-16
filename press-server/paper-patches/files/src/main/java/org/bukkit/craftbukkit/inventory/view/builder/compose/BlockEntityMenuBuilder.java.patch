@@ -1,0 +1,71 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/BlockEntityMenuBuilder.java
+@@ -1,0 +_,68 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import java.util.function.BiFunction;
++import net.minecraft.core.BlockPos;
++import net.minecraft.server.level.ServerPlayer;
++import net.minecraft.world.MenuProvider;
++import net.minecraft.world.inventory.AbstractContainerMenu;
++import net.minecraft.world.inventory.MenuConstructor;
++import net.minecraft.world.inventory.MenuType;
++import net.minecraft.world.level.Level;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.entity.BlockEntity;
++import net.minecraft.world.level.block.state.BlockState;
++
++final class BlockEntityMenuBuilder implements MenuBuilder<MenuContext.Located> {
++
++    private final MenuType<?> type;
++    private final Block block;
++    private final BiFunction<BlockPos, BlockState, ? extends MenuProvider> inventoryBuilder;
++
++    BlockEntityMenuBuilder(final MenuType<?> type, final Block block, final BiFunction<BlockPos, BlockState, ? extends MenuProvider> inventoryBuilder) {
++        this.type = type;
++        this.block = block;
++        this.inventoryBuilder = inventoryBuilder;
++    }
++
++    @Override
++    public Created create(final ServerPlayer player, final MenuContext.Located context) {
++        var locale = context.toMinecraft();
++        if (locale == null) {
++            return this.createFake(player);
++        }
++
++        final Level world = locale.left();
++        final BlockPos position = locale.right();
++
++        final BlockEntity entity = world.getBlockEntity(position);
++        if (!(entity instanceof final MenuConstructor container)) {
++            return this.createFake(player);
++        }
++
++        final AbstractContainerMenu atBlock = container.createMenu(player.nextContainerCounter(), player.getInventory(), player);
++        // throw away mismatched type, we have to build to figure it out
++        if (atBlock.getType() != this.type) {
++            return this.createFake(player);
++        }
++
++        if (!(entity instanceof final MenuProvider provider)) {
++            throw new IllegalStateException("Provided blockEntity during MenuType creation can not find a default title! This is a bug!");
++        }
++
++        return new Created(atBlock, provider.getDisplayName());
++    }
++
++    private Created createFake(final ServerPlayer player) {
++        final MenuProvider inventory = this.inventoryBuilder.apply(player.blockPosition(), this.block.defaultBlockState());
++        if (inventory instanceof final BlockEntity blockEntity) {
++            blockEntity.setLevel(player.level());
++            // marks this as "not in world" for gating general level broadcasts
++            blockEntity.real = false;
++        }
++
++        return new Created(
++            inventory.createMenu(player.nextContainerCounter(), player.getInventory(), player),
++            inventory.getDisplayName()
++        );
++    }
++}

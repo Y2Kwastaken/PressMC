@@ -1,0 +1,75 @@
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/view/builder/compose/LocationContainerViewBuilder.java
+@@ -1,0 +_,72 @@
++package org.bukkit.craftbukkit.inventory.view.builder.compose;
++
++import com.google.common.base.Preconditions;
++import net.kyori.adventure.text.Component;
++import net.minecraft.world.Container;
++import org.bukkit.Location;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryView;
++import org.bukkit.inventory.ItemContainer;
++import org.bukkit.inventory.view.builder.LocationContainerInventoryViewBuilder;
++import org.jspecify.annotations.Nullable;
++
++final class LocationContainerViewBuilder<V extends InventoryView> implements LocationContainerInventoryViewBuilder<V> {
++
++    private final MenuBuilder<MenuContext.Located> menuBuilder;
++    private final ContainerMenuBuilder containerMenuBuilder;
++
++    private @Nullable Component paperTitle;
++    private boolean checkReachable;
++    private @Nullable Location location;
++    private @Nullable Container container;
++
++    LocationContainerViewBuilder(final MenuBuilder<MenuContext.Located> menuBuilder, final ContainerMenuBuilder containerMenuBuilder) {
++        this.menuBuilder = menuBuilder;
++        this.containerMenuBuilder = containerMenuBuilder;
++    }
++
++    @Override
++    public LocationContainerInventoryViewBuilder<V> title(final @Nullable Component title) {
++        this.paperTitle = title;
++        return this;
++    }
++
++    @Override
++    public LocationContainerInventoryViewBuilder<V> checkReachable(final boolean checkReachable) {
++        this.checkReachable = checkReachable;
++        return this;
++    }
++
++    @Override
++    public LocationContainerInventoryViewBuilder<V> location(final Location location) {
++        Preconditions.checkArgument(location != null, "location must not be null");
++        Preconditions.checkArgument(location.getWorld() != null, "location must have world");
++        this.location = location.clone();
++        return this;
++    }
++
++    @Override
++    public LocationContainerInventoryViewBuilder<V> container(final ItemContainer container) {
++        this.container = this.containerMenuBuilder.resolve(container);
++        return this;
++    }
++
++    @Override
++    public V build(final HumanEntity player) {
++        final var serverPlayer = MenuBuilder.verifyHuman(player);
++        final MenuBuilder.Created created = this.container == null
++            ? this.menuBuilder.create(serverPlayer, new MenuContext.Located(this.location))
++            : this.containerMenuBuilder.create(serverPlayer, new MenuContext.Contained(this.container));
++        return created.toView(this.paperTitle, this.checkReachable);
++    }
++
++    @Override
++    public LocationContainerInventoryViewBuilder<V> copy() {
++        final LocationContainerViewBuilder<V> copy = new LocationContainerViewBuilder<>(this.menuBuilder, this.containerMenuBuilder);
++        copy.paperTitle = this.paperTitle;
++        copy.checkReachable = this.checkReachable;
++        copy.location = this.location == null ? null : this.location.clone();
++        copy.container = this.container;
++        return copy;
++    }
++}
